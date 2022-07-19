@@ -281,7 +281,9 @@ export default function RootNavigation() {
 ```
 </details>
 
-1.5 In the root of your project, make another folder ```utils```, and within that folder, make another folder called ```hooks```
+1.5 In the root of your project, make another folder ```utils```.
+Within that folder, make another folder called ```hooks```
+
 1.6 In utils/hooks, make a file called ```useAuthentication.js```
 
 (again, all of this code came from [these docs](https://blog.logrocket.com/integrating-firebase-authentication-expo-mobile-app/#creating-an-authentication-hook))
@@ -320,6 +322,8 @@ export function useAuthentication() {
 ```
 
 </details>
+
+---
 
 Your file structure should look like this:
 ![https://i.imgur.com/g2TT7wu.png](https://i.imgur.com/g2TT7wu.png)
@@ -795,7 +799,7 @@ Since we don't have access to these accounts (because they don't exist), I STRON
 
 ---
 
-You will know that you signed up successfully, because you are automatically logged in after submitting your signup form. How do you know if you are signed in or not? Protected routes! After a successful signup and login you will see the "Chat" button, and a note saying "Hello <useremail>!.
+You will know that you signed up successfully, because you are automatically logged in after submitting your signup form. How do you know if you are signed in or not? Protected routes! After a successful signup and login you will see the "Chat" button, and a note saying "Hello useremail!.
 
 In the Firebase console, in Authentication, your users should appear like this:
 ![https://i.imgur.com/JcW9a4t.png](https://i.imgur.com/JcW9a4t.png)

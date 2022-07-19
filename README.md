@@ -206,8 +206,11 @@ const styles = StyleSheet.create({
 ```
 </details>
 
-1.3 Make a new folder (from your project root) called ```nagivation```
-1.4 Inside your ```navigation``` folder, add three files, and paste this code into them:
+1.3 Make a new folder
+(from your project root) called ```nagivation```
+
+1.4 Inside your ```navigation``` folder:
+Add three files, and paste this code into them:
 
 Refer to [these docs](https://blog.logrocket.com/integrating-firebase-authentication-expo-mobile-app/#creating-the-navigation-router) for explaination!
 

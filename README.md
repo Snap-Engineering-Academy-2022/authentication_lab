@@ -28,7 +28,9 @@ Okay, now we can get started with the lab!
 
 ---
 
-## 1. Add LoginScreen and SignupScreen Components in VSCode
+## 1. Add New Components in VSCode
+
+For this section, we are heavily using [these docs](https://blog.logrocket.com/integrating-firebase-authentication-expo-mobile-app/#creating-an-authentication-hook)
 
 1.1 Make LoginScreen and SignupScreen files / components
 
@@ -204,36 +206,137 @@ const styles = StyleSheet.create({
 ```
 </details>
 
+1.3 Make a new folder (from your project root) called ```nagivation```
+1.4 Inside your ```navigation``` folder, add three files, and paste this code into them:
+
+Refer to [these docs](https://blog.logrocket.com/integrating-firebase-authentication-expo-mobile-app/#creating-the-navigation-router) for explaination!
+
+<details>
+<summary>AuthStack.js (for unauthenticated users)</summary>
+
+```jsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+import LoginScreen from '../screens/LoginScreen';
+import SignupScreen from '../screens/SignupScreen';
+
+const Stack = createStackNavigator();
+
+export default function AuthStack() {
+	return (
+		<NavigationContainer>
+		<Stack.Navigator>
+			<Stack.Screen name="Login" component={LoginScreen} />
+			<Stack.Screen name="Signup" component={SignupScreen} />
+		</Stack.Navigator>
+		</NavigationContainer>
+	);
+}
+```
+</details>
+<details>
+<summary>UserStack.js (for logged in users)</summary>
+
+```jsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+import HomeScreen from '../screens/HomeScreen';
+import ChatScreen from '../screens/ChatScreen';
+
+const Stack = createStackNavigator();
+
+export default function UserStack() {
+	return (
+		<NavigationContainer>
+		<Stack.Navigator>
+			<Stack.Screen name="Home" component={HomeScreen} />
+			<Stack.Screen name="Chat" component={ChatScreen} />
+		</Stack.Navigator>
+		</NavigationContainer>
+	);
+}
+```
+</details>
+<details>
+<summary>Index.js (this will handle app-wide navigation for all states)</summary>
+
+```jsx
+import React from 'react';
+import { useAuthentication } from '../utils/hooks/useAuthentication';
+import UserStack from './UserStack';
+import AuthStack from './AuthStack';
+
+export default function RootNavigation() {
+	const { user } = useAuthentication();
+
+	return user ? <UserStack /> : <AuthStack />;
+}
+```
+</details>
+
+1.5 In the root of your project, make another folder ```utils```, and within that folder, make another folder called ```hooks```
+1.6 In utils/hooks, make a file called ```useAuthentication.js```
+
+(again, all of this code came from [these docs](https://blog.logrocket.com/integrating-firebase-authentication-expo-mobile-app/#creating-an-authentication-hook))
+
+<details>
+<summary>And paste in this code:</summary>
+
+```jsx
+import React, {useEffect, useState} from 'react';
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+
+const auth = getAuth();
+
+export function useAuthentication() {
+	const [user, setUser] = useState();
+
+	useEffect(() => {
+		const unsubscribeFromAuthStatusChanged = onAuthStateChanged(auth, (user) => {
+		if (user) {
+			// User is signed in, see docs for a list of available properties
+			// https://firebase.google.com/docs/reference/js/firebase.User
+			setUser(user);
+		} else {
+			// User is signed out
+			setUser(undefined);
+		}
+		});
+
+		return unsubscribeFromAuthStatusChanged;
+	}, []);
+
+	return {
+		user
+	};
+}
+```
+
+</details>
+
+Your file structure should look like this:
+![https://i.imgur.com/g2TT7wu.png](https://i.imgur.com/g2TT7wu.png)
+
 ---
 
-## 2. Update your App.js file to include our new components
+## 2. Update your App.js file (this file now just "directs" us to our ./navigation/Index.js)
 
+2.1
 <details>
 <summary>Copy / Paste into your App.js file:</summary>
 
 ```jsx
-import React from "react";
-import { StyleSheet } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-
-import ChatScreen from "./screens/ChatScreen";
-import HomeScreen from "./screens/HomeScreen";
-import LoginScreen from "./screens/LoginScreen";
-import SignupScreen from "./screens/SignupScreen"
-
-const Stack = createStackNavigator();
+import React from 'react';
+import './firebase';
+import RootNavigation from './navigation/Index';
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Chat" component={ChatScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Signup" component={SignupScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <RootNavigation />
   );
 }
 ```
@@ -269,6 +372,9 @@ https://firebase.google.com/docs/auth/web/password-auth
 
 https://firebase.google.com/docs/auth/web/manage-users#get_the_currently_signed-in_user (stop at "get a user's profile, just go through the first section "Get the currently signed-in user")
 
+https://blog.logrocket.com/integrating-firebase-authentication-expo-mobile-app/#creating-an-authentication-hook 
+
+
 ---
 
 ## 5. Impliment Signup Functionality
@@ -301,8 +407,6 @@ export default function LoginScreen({navigation}) {
 			const errorCode = error.code;
 			const errorMessage = error.message;
 		});
-
-		navigation.navigate("Home")
 	}
 
 	return (
@@ -457,10 +561,6 @@ export default function LoginScreen({navigation}) {
 			const errorCode = error.code;
 			const errorMessage = error.message;
 		});
-
-		let currentUser = auth.currentUser
-		navigation.navigate("Home")
-		return currentUser;
 	}
 
 	return (
@@ -594,10 +694,7 @@ export default function HomeScreen({ navigation }) {
 	const auth = getAuth();
 	const user = auth.currentUser;
 
-	useEffect(() => {
-		console.log(user, "<-- curr user in home screen")
-		setState(user);
-	});
+	console.log(user, "<--- user in the home screen")
 
 	if (user !== null) {
 		return (
@@ -611,11 +708,11 @@ export default function HomeScreen({ navigation }) {
 					// An error happened.
 					// should we do something with that error??
 				});
-				console.log(auth, "<---- auth")
-				navigation.navigate("Login")
 			}}>
 				<Text style={styles.loginText}>sign out</Text>
 			</TouchableOpacity>
+
+			<Text>Hello, {user.email}! </Text>
 
 			<TouchableOpacity
 				onPress={() => navigation.navigate("Chat")}
@@ -638,8 +735,6 @@ export default function HomeScreen({ navigation }) {
 		>
 			<Text style={styles.item}>signup</Text>
 		</TouchableOpacity>
-
-			
 		</View>
 		);
 	}
@@ -675,7 +770,7 @@ const styles = StyleSheet.create({
 ```
 </details>
 
-7.2 Match our code to [these docs](https://firebase.google.com/docs/auth/web/manage-users#get_the_currently_signed-in_user)
+7.2 Match our code to [these docs](https://firebase.google.com/docs/auth/web/manage-users#get_the_currently_signed-in_user), meaning compare lines of your code to these docs, basically find the "source" where we got this code from.
 
 Write 2 comments explaing our "protected routes" code in your HomeScreen.js file
 
@@ -697,7 +792,7 @@ Since we don't have access to these accounts (because they don't exist), I STRON
 
 ---
 
-You will know that you signed up successfully, because you are automatically logged in after submitting your signup form. How do you know if you are signed in or not? Protected routes! After a successful signup and login you will see the "Chat" button.
+You will know that you signed up successfully, because you are automatically logged in after submitting your signup form. How do you know if you are signed in or not? Protected routes! After a successful signup and login you will see the "Chat" button, and a note saying "Hello <useremail>!.
 
 In the Firebase console, in Authentication, your users should appear like this:
 ![https://i.imgur.com/JcW9a4t.png](https://i.imgur.com/JcW9a4t.png)
@@ -714,14 +809,3 @@ Convert either of the handleSubmit() functions from an async to a regular functi
 
 ## Style:
 You will be using this code for reference for your final showcase proj, so take some time to style it to look as similar as possible to Chapsnat!
-
-## Challenge: get this to work!
-
-Thinking about the UI (user interface), there are many apps that have a greeting specific to the user near the top nav bar. Let's try to impliment something saying "Hello, user!" (we will have to use user.email beacuse we are not gathering names, but you get the idea).
-
-Try adding something like this to your HomeScreen.js:
-```jsx
-<Text>Hello, {user.email}! </Text>
-```
-
-The user value is not properly assigned at the moment. Your task is to make this <Text> component properly render the current logged in user's email.
